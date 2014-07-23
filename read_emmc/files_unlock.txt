@@ -1,0 +1,3 @@
+/data/data/com.android.providers.settings/databases/settings.db
+/data/system/password.key
+/data/system/gesture.key
