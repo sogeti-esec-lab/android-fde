@@ -6,9 +6,11 @@ It can be used on an encrypted data.img, over USB from recovery mode and over fa
 
 ## Disclaimer
 
-The Full Disk Encryption tools are heavily based on Thomas Cannon tools and now support HTC One. See below.
+The Full Disk Encryption tools are heavily based on Thomas Cannon tools and support HTC One, Wiko WAX (including the Blackphone). See below.
 
 Use over "fastboot oem read_mmc" currently only supports HTC One HBOOT < 1.56.0000.
+
+To dump Wiko WAX phones, use the scripts included in the "dump_nvtegra" directory. The dumping process for Linux and Windows is discribed also in the README.md of this same directory.
 
 ## License
 
