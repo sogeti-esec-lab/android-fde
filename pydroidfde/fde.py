@@ -30,9 +30,10 @@ SECTOR_SIZE = 512
 BLOCK_SIZE = 16
 ENCRYPT = 1
 DECRYPT = 0
+header = ''
 
 def parse_header(header_file):
-
+  global header
   # Check header file is bigger than 0x100
   fileSize = path.getsize(header_file)
   assert(fileSize >= 0x100)
@@ -53,6 +54,9 @@ def parse_header(header_file):
   failedDecrypt, \
   cryptoType = \
   struct.unpack(HEADER_FORMAT, header[0:100])
+
+  if minorVersion != 0: # TODO: This is a dirty fix for 1.2 header. Need to do something more generic
+    ftrSize = 0x68
 
   encrypted_key = header[ftrSize:ftrSize + keySize]
   salt = header[ftrSize + keySize + 32:ftrSize + keySize + 32 + 16]
@@ -89,10 +93,23 @@ def get_decrypted_key(encrypted_key, salt, password, debug=True):
   # Calculate the key decryption key and IV from the password
   # We encountered problems with EVP.pbkdf2 on some Windows platforms with M2Crypto-0.21.1
   # In such case, use pbkdf2.py from https://github.com/mitsuhiko/python-pbkdf2
-  pbkdf2 = EVP.pbkdf2(password, salt, iter=HASH_COUNT, keylen=keySize+IV_LEN_BYTES)
-  #pbkdf2 = pbkdf2_bin(data=password, salt=salt, iterations=HASH_COUNT, keylen=keySize+IV_LEN_BYTES)
-  key = pbkdf2[:keySize]
-  iv = pbkdf2[keySize:]
+  # For scrypt case, use py-script from https://bitbucket.org/mhallin/py-scrypt/src
+  deriv_result = None
+  dkLen = keySize+IV_LEN_BYTES
+  if header[0xbc] == '\x02': # if the header specify a dkType == 2, the partition uses scrypt
+    import scrypt
+    print '[+] This partition uses scrypt'
+    factors = (ord(fact) for fact in header[0xbd:0xc0])
+    N = factors.next()
+    r = factors.next()
+    p = factors.next()
+    print "[+] scrypt parameters are: N=%s, r=%s, p=%s" % (hex(N), hex(r), hex(p))
+    deriv_result = scrypt.hash(password, salt, 1 << N, 1 << r, 1 << p)[:dkLen]
+  else:
+    print '[+] This partition uses pbkdf2'
+    deriv_result = EVP.pbkdf2(password, salt, iter=HASH_COUNT, keylen=dkLen)
+  key = deriv_result[:keySize]
+  iv = deriv_result[keySize:]
 
   # Decrypt the encryption key
   cipher = EVP.Cipher(alg=algorithm, key=key, iv=iv, padding=0, op=DECRYPT)
