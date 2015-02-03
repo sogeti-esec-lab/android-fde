@@ -10,7 +10,7 @@ The Full Disk Encryption tools are heavily based on Thomas Cannon tools and supp
 
 Use over "fastboot oem read_mmc" currently only supports HTC One HBOOT < 1.56.0000.
 
-To dump Wiko WAX phones, use the scripts included in the "dump_nvtegra" directory. The dumping process for Linux and Windows is discribed also in the README.md of this same directory.
+To dump Wiko WAX phones, use the scripts included in the "dump_nvtegra" directory. The dumping process for Linux and Windows is described also in the README.md of this same directory.
 
 ## License
 
